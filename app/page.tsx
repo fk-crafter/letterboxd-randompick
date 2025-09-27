@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 type Film = {
   title: string;
@@ -54,54 +55,64 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-dvh flex items-center justify-center p-6">
-      <Card className="w-full max-w-xl">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-zinc-950 to-zinc-900 p-4 sm:p-6">
+      <Card className="w-full max-w-2xl shadow-xl border border-zinc-800">
         <CardHeader>
-          <CardTitle>🎬 Letterboxd Picker</CardTitle>
+          <CardTitle className="text-center text-xl sm:text-2xl font-bold">
+            Letterboxd Picker
+          </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex gap-2">
+
+        <CardContent className="space-y-6">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Input
-              placeholder="Pseudo Letterboxd (ex: tarantino)"
+              placeholder="pseudo"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
+              className="flex-1"
             />
-            <Button onClick={fetchFilms} disabled={loading}>
+            <Button onClick={fetchFilms} disabled={loading} className="sm:w-32">
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                "Charger"
+                "Rechercher"
               )}
             </Button>
           </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-center text-sm">{error}</p>}
 
           {films.length > 0 && (
-            <div className="space-y-3">
-              <Button onClick={pickRandomFilm} variant="secondary">
+            <div className="space-y-4 text-center">
+              <Button
+                onClick={pickRandomFilm}
+                variant="secondary"
+                className="w-full sm:w-auto"
+              >
                 Choisir un film au hasard
               </Button>
-              {randomFilm && (
-                <div className="p-3 border rounded-md space-y-2 text-center">
-                  <Image
-                    src={randomFilm.poster}
-                    alt={randomFilm.title}
-                    width={160}
-                    height={240}
-                    className="mx-auto rounded-md shadow-md"
-                  />
-                  <p className="font-semibold">{randomFilm.title}</p>
-                  <a
-                    href={randomFilm.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 text-sm"
+
+              <AnimatePresence>
+                {randomFilm && (
+                  <motion.div
+                    key={randomFilm.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.4 }}
+                    className="p-4 border rounded-lg bg-zinc-900 text-center space-y-3"
                   >
-                    Voir sur Letterboxd →
-                  </a>
-                </div>
-              )}
+                    <Image
+                      src={randomFilm.poster}
+                      alt={randomFilm.title}
+                      width={200}
+                      height={300}
+                      className="mx-auto rounded-lg shadow-lg"
+                    />
+                    <p className="text-lg font-semibold">{randomFilm.title}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </CardContent>

@@ -44,7 +44,7 @@ export async function GET(req: Request) {
 
         let poster = $(el).find("img").attr("src") || null;
         if (poster) {
-          poster = poster.replace("/image-150/", "/image-600/"); // meilleure qualité
+          poster = poster.replace("/image-150/", "/image-600/");
         }
 
         return {
