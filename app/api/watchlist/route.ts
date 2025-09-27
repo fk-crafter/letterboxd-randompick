@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { chromium } from "playwright";
+import * as cheerio from "cheerio";
 
 export async function GET(req: Request) {
   try {
@@ -15,36 +15,36 @@ export async function GET(req: Request) {
 
     const url = `https://letterboxd.com/${user}/watchlist/`;
 
-    // Lance Chromium en mode headless
-    const browser = await chromium.launch({ headless: true });
-    const page = await browser.newPage();
-    await page.goto(url, { waitUntil: "domcontentloaded" });
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+      },
+    });
 
-    // Attend que les posters soient visibles
-    await page.waitForSelector(".film-poster");
+    if (!res.ok) {
+      return NextResponse.json(
+        { error: "Failed to fetch watchlist" },
+        { status: 500 }
+      );
+    }
 
-    // Récupère les films
-    const films = await page.$$eval(".film-poster", (elements) =>
-      elements.map((el) => {
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    const films = $(".poster.film-poster")
+      .map((_, el) => {
         const title =
-          el.getAttribute("data-film-name") ||
-          el.getAttribute("aria-label") ||
-          (el.querySelector("img")?.getAttribute("alt") ?? "");
+          $(el).attr("data-film-name") ||
+          $(el).attr("aria-label") ||
+          $(el).find("img").attr("alt") ||
+          "Untitled";
 
-        const link = el.getAttribute("data-target-link");
-        const slug = el.getAttribute("data-film-slug");
+        const link = $(el).attr("data-target-link");
+        const slug = $(el).attr("data-film-slug");
 
-        const img = el.querySelector("img");
-        let poster: string | null = null;
-
-        if (img) {
-          const srcset = img.getAttribute("srcset");
-          if (srcset) {
-            // On prend la dernière URL (souvent le 2x en HD)
-            poster = srcset.split(",").pop()?.trim().split(" ")[0] || null;
-          } else {
-            poster = img.getAttribute("src");
-          }
+        let poster = $(el).find("img").attr("src") || null;
+        if (poster) {
+          poster = poster.replace("/image-150/", "/image-600/"); // meilleure qualité
         }
 
         return {
@@ -57,15 +57,7 @@ export async function GET(req: Request) {
           poster,
         };
       })
-    );
-
-    await browser.close();
-
-    // Debug dans ton terminal
-    console.log("Films trouvés:", films.length);
-    if (films.length > 0) {
-      console.log("Premier film:", films[0]);
-    }
+      .get();
 
     return NextResponse.json({ films });
   } catch (err) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image"; // ✅ pour remplacer <img>
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,8 +9,8 @@ import { Loader2 } from "lucide-react";
 
 type Film = {
   title: string;
-  url: string | null;
-  poster?: string | null;
+  url: string;
+  poster: string;
 };
 
 export default function HomePage() {
@@ -84,26 +84,22 @@ export default function HomePage() {
               </Button>
               {randomFilm && (
                 <div className="p-3 border rounded-md space-y-2 text-center">
-                  {randomFilm.poster && (
-                    <Image
-                      src={randomFilm.poster}
-                      alt={randomFilm.title ?? "Poster"}
-                      width={160}
-                      height={240}
-                      className="mx-auto rounded-md shadow-md"
-                    />
-                  )}
+                  <Image
+                    src={randomFilm.poster}
+                    alt={randomFilm.title}
+                    width={160}
+                    height={240}
+                    className="mx-auto rounded-md shadow-md"
+                  />
                   <p className="font-semibold">{randomFilm.title}</p>
-                  {randomFilm.url && (
-                    <a
-                      href={randomFilm.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 text-sm"
-                    >
-                      Voir sur Letterboxd →
-                    </a>
-                  )}
+                  <a
+                    href={randomFilm.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 text-sm"
+                  >
+                    Voir sur Letterboxd →
+                  </a>
                 </div>
               )}
             </div>
